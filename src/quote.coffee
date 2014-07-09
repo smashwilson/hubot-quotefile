@@ -29,35 +29,38 @@ module.exports = (robot) ->
     throw new Error('hubot-quotefile: HUBOT_QUOTEFILE_PATH must be specified.')
 
   reloadThen = (callback) ->
-    fs.readFile quotefilePath, (err, data) ->
+    fs.readFile quotefilePath, encoding: 'utf-8', (err, data) ->
       if err?
         callback(err)
         return
 
       quotes = data.split /\n\n/
+      quotes = _.filter quotes, (quote) -> quote.length > 1
       callback(null)
 
   rxEscape = (str) -> (str + '').replace /([.?*+^$[\]\\(){}|-])/g, "\\$1"
 
-  robot.respond /quote(.*)/, (msg) ->
-    query = msg.match[2].trim().split /\W+/
+  robot.respond /quote(.*)/i, (msg) ->
+    query = msg.match[1].trim().split /\s+/
+    query = _.filter query, (part) -> part.length > 0
 
     potential = quotes
 
     if query.length > 0
-      pattern = new Regexp(rxEscape query.join '|')
-      potential = _.filter potential, (quote) -> pattern.match quote
+      escaped = (rxEscape(q) for q in query).join '|'
+      pattern = new RegExp(escaped, "gi")
+      potential = _.filter potential, (quote) -> pattern.test(quote)
 
     if potential.length > 0
       chosen = _.random potential.length - 1
-      msg.send potential
+      msg.send potential[chosen]
     else
       msg.send "That wasn't notable enough to quote. Try harder."
 
-  robot.respond /reload quotes$/, (msg) ->
+  robot.respond /reload quotes$/i, (msg) ->
     reloadThen (err) ->
       if err?
         msg.send "Oh, snap! Something blew up."
         msg.send err.stack
       else
-        msg.send "#{quotes.length} loaded successfully."
+        msg.send "#{quotes.length} quotes loaded successfully."
