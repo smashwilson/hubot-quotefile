@@ -1,8 +1,8 @@
 {
-  "name": "hubot-example",
-  "description": "An example script package for Hubot",
+  "name": "hubot-quotefile",
+  "description": "Report random quotes from a data file.",
   "version": "1.0.0",
-  "author": "Tom Bell <tomb@tomb.io>",
+  "author": "Ash Wilson <smashwilson@gmail.com>",
   "license": "MIT",
 
   "keywords": [
@@ -12,11 +12,11 @@
 
   "repository": {
     "type": "git",
-    "url": "git://github.com/hubot-scripts/hubot-example.git"
+    "url": "git://github.com/smashwilson/hubot-quotefile.git"
   },
 
   "bugs": {
-    "url": "https://github.com/hubot-scripts/hubot-example/issues"
+    "url": "https://github.com/smashwilson/hubot-quotefile/issues"
   },
 
   "dependencies": {

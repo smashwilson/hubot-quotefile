@@ -1,35 +1,40 @@
-# Hubot Example
+# Hubot Quote File
 
-An example script package for Hubot
+Maintain a quote file of hilarious, out-of-context quotes from your chat, to bring then up later
+either randomly or matching a search term.
 
-[![Build Status](https://travis-ci.org/hubot-scripts/hubot-example.png)](https://travis-ci.org/hubot-scripts/hubot-example)
+## Installing
 
-## Directory Structure
+1. `npm install --save hubot-quotefile`
+2. Require the module in `external-scripts.json`:
 
-Using the common directory structure for hubot script packages it will be easy
-to manage and allow others to easily contribute to your package.
+  ```json
+  ["hubot-quotefile"]
+  ```
 
-### script
+3. Restart your Hubot.
 
-This directory is home to a couple of development scripts; `bootstrap` and `test`
-they're used to bootstrap the development environment and run tests
-respectively.
+## Commands
 
-### src
+Memorable quotes are stored in a flat text file that you can also maintain with `${EDITOR}`. Its format is simple - separate each quote with two newlines:
 
-This directory is home to the actual hubot scripts in the package. Your
-`index.coffee` entry point will load the scripts from this directory.
+```
+quote one
+still quote one, second line
 
-### test
+quote two
 
-This directory is home to any tests you write for your scripts. This example
-package uses Mocha, Chai and Sinon to manage writing tests.
+a third quote
+that's
+three lines long
+```
 
-## Advantages of Building a Package
+`Hubot: quote` will summon a random quote from the file.
 
-Some of the advantages of building an npm package for your hubot script(s) are:
+`Hubot: quote Fenris corpse` will summon a random quote containing the words "Fenris" and "corpse".
 
-* You don't need to rely on when hubot-scripts package is released.
-* You can specify dependencies in the `package.json` rather than have users
-  manually specify them
-* You can easily add tests using your favourite frameworks and libraries
+`Hubot: reload quotes` will trigger an automatic, asynchronous reload of the file.
+
+## Configuring
+
+`HUBOT_QUOTEFILE_PATH` controls the location of the quotefile.
