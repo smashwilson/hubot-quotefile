@@ -112,8 +112,15 @@ module.exports = (robot) ->
         timestamp = moment {hours: hours, minutes: minutes}
         ts = timestamp.format('[h:mm A d MMM YYYY]')
       else if speaker?
-        processed.push "#{ts} #{speaker}: #{line}"
+        processed.push "\n#{ts} #{speaker}: #{line}"
       else
-        processed.push line
+        processed.push "\n#{line}"
 
-    console.log processed
+    fs.appendFile quotefilePath, processed.join(""), ->
+      msg.reply "Quote added."
+      reloadThen (err) ->
+        if err?
+          msg.reply "AAAAAAAH"
+          msg.send err.stack
+        else
+          msg.send "#{quotes.length} quotes reloaded successfully."
