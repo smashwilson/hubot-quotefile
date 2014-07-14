@@ -21,7 +21,7 @@ _ = require 'underscore'
 module.exports = (robot) ->
 
   # Global state.
-  quotes = []
+  quotes = null
 
   # Read configuration from the environment.
   quotefilePath = process.env.HUBOT_QUOTEFILE_PATH
@@ -38,7 +38,19 @@ module.exports = (robot) ->
       quotes = _.filter quotes, (quote) -> quote.length > 1
       callback(null)
 
+  isLoaded = (msg) ->
+    if quotes?
+      true
+    else
+      msg.reply "Just a moment, the quotes aren't loaded yet."
+      false
+
+  # Perform the initial load.
+  reloadThen ->
+
   robot.respond /quote(.*)/i, (msg) ->
+    return unless isLoaded(msg)
+
     query = msg.match[1].trim().split /\s+/
     query = _.filter query, (part) -> part.length > 0
 
