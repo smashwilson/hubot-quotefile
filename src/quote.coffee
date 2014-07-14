@@ -102,7 +102,7 @@ module.exports = (robot) ->
     q = msg.match[1]
 
     # Post-processing specific to Slack.
-    processed = []
+    processed = ['']
     [speaker, ts] = []
     for line in q.split(/\n/)
       m = line.match /(\S+) \[(\d?\d):(\d\d) ([AP]M)\]/
@@ -112,11 +112,14 @@ module.exports = (robot) ->
         timestamp = moment {hours: hours, minutes: minutes}
         ts = timestamp.format('[h:mm A d MMM YYYY]')
       else if speaker?
-        processed.push "\n#{ts} #{speaker}: #{line}"
+        processed.push "#{ts} #{speaker}: #{line}"
       else
-        processed.push "\n#{line}"
+        processed.push line
+    processed.push ''
 
-    fs.appendFile quotefilePath, processed.join(""), ->
+    nquote = processed.join("\n")
+    console.log nquote
+    fs.appendFile quotefilePath, nquote, ->
       msg.reply "Quote added."
       reloadThen (err) ->
         if err?
