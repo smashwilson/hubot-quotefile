@@ -2,7 +2,7 @@
 #   Retrieve embarassing quotes from your co-workers out of context!
 #
 # Dependencies:
-#   underscore
+#   underscore, moment.js
 #
 # Configuration:
 #   HUBOT_QUOTEFILE_PATH The location of the quotefile.
@@ -17,6 +17,9 @@
 
 fs = require 'fs'
 _ = require 'underscore'
+moment = require 'moment'
+
+CREATOR_ROLE = 'quote pontiff'
 
 module.exports = (robot) ->
 
@@ -80,7 +83,6 @@ module.exports = (robot) ->
     qstr = msg.match[1] or ' everything'
     msg.reply "There are #{matches.length} quotes about#{qstr}."
 
-
   robot.respond /reload quotes$/i, (msg) ->
     reloadThen (err) ->
       if err?
@@ -88,3 +90,30 @@ module.exports = (robot) ->
         msg.send err.stack
       else
         msg.send "#{quotes.length} quotes loaded successfully."
+
+  robot.respond /create quote: (.*)/i, (msg) ->
+    unless robot.auth.hasRole(msg.message.user, CREATOR_ROLE)
+      msg.reply [
+        "You can't do that! You're not a *#{CREATOR_ROLE}*."
+        "Ask an admin to run `#{robot.name} #{msg.message.user.name} has #{CREATOR_ROLE} role`."
+      ].join("\n")
+      return
+
+    q = msg.match[1]
+
+    # Post-processing specific to Slack.
+    processed = []
+    [speaker, ts] = []
+    for line in q.split(/\n/)
+      m = line.match /(\S+) \[(\d?\d):(\d\d) ([AP]M)\]/
+      if m?
+        [x, speaker, hours, minutes, ampm] = m
+        hours += 12 if ampm is 'PM'
+        timestamp = moment {hours: hours, minutes: minutes}
+        ts = timestamp.format('[h:mm A d MMM YYYY]')
+      else if speaker?
+        processed.push "#{ts} #{speaker}: #{line}"
+      else
+        processed.push line
+
+    console.log processed
