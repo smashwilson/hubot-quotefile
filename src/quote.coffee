@@ -92,7 +92,7 @@ module.exports = (robot) ->
       else
         msg.send "#{quotes.length} quotes loaded successfully."
 
-  robot.respond /create quote: (.*)/i, (msg) ->
+  robot.respond /create quote: ([\s\S]*)/i, (msg) ->
     unless robot.auth.hasRole(msg.message.user, CREATOR_ROLE)
       msg.reply [
         "You can't do that! You're not a *#{CREATOR_ROLE}*."
