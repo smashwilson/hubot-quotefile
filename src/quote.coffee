@@ -38,8 +38,6 @@ module.exports = (robot) ->
       quotes = _.filter quotes, (quote) -> quote.length > 1
       callback(null)
 
-  rxEscape = (str) -> (str + '').replace /([.?*+^$[\]\\(){}|-])/g, "\\$1"
-
   robot.respond /quote(.*)/i, (msg) ->
     query = msg.match[1].trim().split /\s+/
     query = _.filter query, (part) -> part.length > 0
@@ -47,9 +45,8 @@ module.exports = (robot) ->
     potential = quotes
 
     if query.length > 0
-      escaped = (rxEscape(q) for q in query).join '|'
-      pattern = new RegExp(escaped, "gi")
-      potential = _.filter potential, (quote) -> pattern.test(quote)
+      potential = _.filter potential, (quote) ->
+        _.every query, (q) -> quote.indexOf(q) isnt -1
 
     if potential.length > 0
       chosen = _.random potential.length - 1
