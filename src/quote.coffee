@@ -10,6 +10,7 @@
 # Commands:
 #   hubot quote - Retrieve a random quote.
 #   hubot quote <query> - Retrieve a random quote that contains each word of <query>.
+#   hubot howmany <query> - Return the number of quotes that contain each word of <query>.
 #   hubot reload quotes - Reload the quote file.
 #
 # Author:
