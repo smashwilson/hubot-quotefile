@@ -25,10 +25,12 @@ module.exports = (robot) ->
 
   # Read configuration from the environment.
   quotefilePath = process.env.HUBOT_QUOTEFILE_PATH
-  unless quotefilePath?
-    throw new Error('hubot-quotefile: HUBOT_QUOTEFILE_PATH must be specified.')
 
   reloadThen = (callback) ->
+    unless quotefilePath?
+      quotes = []
+      return
+
     fs.readFile quotefilePath, encoding: 'utf-8', (err, data) ->
       if err?
         callback(err)
