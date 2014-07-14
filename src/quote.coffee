@@ -108,21 +108,17 @@ module.exports = (robot) ->
     for line in q.split(/\n/)
       m = line.match /(\S+) \[(\d?\d):(\d\d) ([AP]M)\]/
       if m?
-        msg.reply "match! - <#{line}> => <#{m.join ', '}>"
         [x, speaker, hours, minutes, ampm] = m
         hours += 12 if ampm is 'PM'
         timestamp = moment {hours: hours, minutes: minutes}
-        ts = timestamp.format('[h:mm A d MMM YYYY]')
+        ts = timestamp.format('h:mm A d MMM YYYY')
       else if speaker?
-        msg.reply "regular line, with speaker"
-        processed.push "#{ts} #{speaker}: <#{line}>"
+        processed.push "[#{ts}] #{speaker}: #{line}"
       else
-        msg.reply "regular line, no speaker <#{line}>"
         processed.push line
     processed.push ''
 
     nquote = processed.join("\n")
-    console.log nquote
     fs.appendFile quotefilePath, nquote, ->
       msg.reply "Quote added."
       reloadThen (err) ->
