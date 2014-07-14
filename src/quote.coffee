@@ -111,7 +111,6 @@ module.exports = (robot) ->
         [x, speaker, hours, minutes, ampm] = m
         [hours, minutes] = [parseInt(hours), parseInt(minutes)]
         hours += 12 if ampm is 'PM'
-        msg.reply "hours: #{hours} minutes: #{minutes}"
         timestamp = moment({hours: hours, minutes: minutes})
         ts = timestamp.format('h:mm A d MMM YYYY')
       else if speaker? and line.length > 0
