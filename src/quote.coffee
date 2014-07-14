@@ -109,9 +109,10 @@ module.exports = (robot) ->
       m = line.match /(\S+) \[(\d?\d):(\d\d) ([AP]M)\]/
       if m?
         [x, speaker, hours, minutes, ampm] = m
+        [hours, minutes] = [parseInt(hours), parseInt(minutes)]
         hours += 12 if ampm is 'PM'
         msg.reply "hours: #{hours} minutes: #{minutes}"
-        timestamp = moment({hours: parseInt(hours), minutes: parseInt(minutes)})
+        timestamp = moment({hours: hours, minutes: minutes})
         ts = timestamp.format('h:mm A d MMM YYYY')
       else if speaker? and line.length > 0
         processed.push "[#{ts}] #{speaker}: #{line}"
