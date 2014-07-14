@@ -112,9 +112,9 @@ module.exports = (robot) ->
         hours += 12 if ampm is 'PM'
         timestamp = moment({hours: parseInt(hours), minutes: parseInt(minutes)})
         ts = timestamp.format('h:mm A d MMM YYYY')
-      else if speaker?
+      else if speaker? and line.length > 0
         processed.push "[#{ts}] #{speaker}: #{line}"
-      else
+      else if line.length > 0
         processed.push line
     processed.push ''
 
