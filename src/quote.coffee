@@ -52,7 +52,10 @@ module.exports = (robot) ->
       false
 
   queryFrom = (msg) ->
-    words = msg.match[1].trim().split /\s+/
+    if msg.match[1]?
+      words = msg.match[1].trim().split /\s+/
+    else
+      words = ['']
     _.filter words, (part) -> part.length > 0
 
   quotesMatching = (query) ->
@@ -65,7 +68,7 @@ module.exports = (robot) ->
   # Perform the initial load.
   reloadThen ->
 
-  robot.respond /quote(.*)/i, (msg) ->
+  robot.respond /quote(\s.*)?/i, (msg) ->
     return unless isLoaded(msg)
 
     potential = quotesMatching queryFrom msg
@@ -76,7 +79,7 @@ module.exports = (robot) ->
     else
       msg.send "That wasn't notable enough to quote. Try harder."
 
-  robot.respond /howmany(.*)/i, (msg) ->
+  robot.respond /howmany(\s.*)/i, (msg) ->
     return unless isLoaded(msg)
 
     matches = quotesMatching queryFrom msg
@@ -129,7 +132,7 @@ module.exports = (robot) ->
         else
           msg.send "#{quotes.length} quotes reloaded successfully."
 
-  robot.respond /top quotes$/i, (msg) ->
+  robot.respond /quotestats$/i, (msg) ->
     return unless isLoaded(msg)
 
     usernames = []
