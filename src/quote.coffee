@@ -132,34 +132,13 @@ module.exports = (robot) ->
   robot.respond /top quotes$/i, (msg) ->
     return unless isLoaded(msg)
 
-    # usernames = (u.name for u in robot.brain.users)
-    usernames = [
-      "smashwilson"
-      "jlitzwilson"
-      "jrhusel"
-      "reostra"
-      "purr-purr"
-      "hdcunni"
-      "fenris"
-      "k0d3k1ttn"
-      "zmbusse"
-      "femshep"
-      "aschwa2"
-      "phbarna"
-      "blackbeardtron"
-      "iguanaditty"
-      "wrbritt"
-      "frey"
-      "clamsey"
-      "roastin41"
-      "puppetwrangler"
-      "pusscat"
-      "llynmir"
-      "gmhowar"
-      "susan"
-      "spartacus"
-      "belle.carrell"
-    ]
+    usernames = []
+    for uid in Object.keys(robot.brain.users())
+      usernames.push robot.brain.users()[uid].name
+    if usernames.length is 0
+      msg.reply "I have no users. How can that be?"
+      return
+
     results = {}
 
     incrementResultFor = (username, kind) ->
@@ -170,23 +149,21 @@ module.exports = (robot) ->
 
     for quote in quotes
       [speakers, mentioned] = [[], []]
-      mentionMatcher = new RegExp('(' + usernames.join('|') + ')', 'g')
+      mentionMatcher = new RegExp(usernames.join('|'), 'g')
       mentionsFrom = (str) ->
-        mention = null
+        mention = mentionMatcher.exec(str)
+        mentioned.push mention[0] if mention?
         while mention?
           mention = mentionMatcher.exec(str)
-          mentioned.push mention if mention?
-      console.log "Matcher is: #{mentionMatcher.toString()}"
+          mentioned.push mention[0] if mention?
 
       for line in quote.split(/\n/)
         m = line.match(/^\[[^\]]+\] @?([^:]+): (.*)$/)
         if m?
           [x, speaker, rest] = m
-          console.log "Speaker: #{speaker}, rest: #{rest}"
           speakers.push speaker
           mentionsFrom(rest)
         else
-          console.log "No match in #{line}"
           mentionsFrom(line)
 
       incrementResultFor(u, 'spoke') for u in _.uniq speakers
