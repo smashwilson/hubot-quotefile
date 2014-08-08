@@ -128,3 +128,95 @@ module.exports = (robot) ->
           msg.send err.stack
         else
           msg.send "#{quotes.length} quotes reloaded successfully."
+
+  robot.respond /top quotes$/i, (msg) ->
+    return unless isLoaded(msg)
+
+    # usernames = (u.name for u in robot.brain.users)
+    usernames = [
+      "smashwilson"
+      "jlitzwilson"
+      "jrhusel"
+      "reostra"
+      "purr-purr"
+      "hdcunni"
+      "fenris"
+      "k0d3k1ttn"
+      "zmbusse"
+      "femshep"
+      "aschwa2"
+      "phbarna"
+      "blackbeardtron"
+      "iguanaditty"
+      "wrbritt"
+      "frey"
+      "clamsey"
+      "roastin41"
+      "puppetwrangler"
+      "pusscat"
+      "llynmir"
+      "gmhowar"
+      "susan"
+      "spartacus"
+      "belle.carrell"
+    ]
+    results = {}
+
+    incrementResultFor = (username, kind) ->
+      r = results[username] ?=
+        spoke: 0
+        mentioned: 0
+      r[kind] += 1
+
+    for quote in quotes
+      [speakers, mentioned] = [[], []]
+      mentionMatcher = new RegExp('(' + usernames.join('|') + ')', 'g')
+      mentionsFrom = (str) ->
+        mention = null
+        while mention?
+          mention = mentionMatcher.exec(str)
+          mentioned.push mention if mention?
+      console.log "Matcher is: #{mentionMatcher.toString()}"
+
+      for line in quote.split(/\n/)
+        m = line.match(/^\[[^\]]+\] @?([^:]+): (.*)$/)
+        if m?
+          [x, speaker, rest] = m
+          console.log "Speaker: #{speaker}, rest: #{rest}"
+          speakers.push speaker
+          mentionsFrom(rest)
+        else
+          console.log "No match in #{line}"
+          mentionsFrom(line)
+
+      incrementResultFor(u, 'spoke') for u in _.uniq speakers
+      incrementResultFor(u, 'mentioned') for u in _.uniq mentioned
+
+    # Report the results.
+    transformed = _.map usernames, (u) ->
+      r = results[u]
+      r ?=
+        spoke: 0
+        mentioned: 0
+
+      { username: u, spoke: r.spoke.toString(), mentioned: r.mentioned.toString() }
+    ordered = _.sortBy transformed, (r) -> parseInt(r.spoke) * -1
+
+    justify = (str, width) ->
+      if str.length >= width
+        str[0..(width - 3)] + '...'
+      else
+        justified = str
+        for i in [0..(width - str.length)]
+          justified += ' '
+        justified
+
+    lines = [
+      "```"
+      "#{justify 'Username', 20}| #{justify 'Spoke', 10}| #{justify 'Mentioned', 10}"
+    ]
+    for row in ordered
+      lines.push "#{justify row.username, 20}| #{justify row.spoke, 10}| #{justify row.mentioned, 10}"
+    lines.push "```"
+
+    msg.send lines.join("\n")
