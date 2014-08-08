@@ -69,7 +69,7 @@ module.exports = (robot) ->
   # Perform the initial load.
   reloadThen ->
 
-  robot.respond /quote(\s.*)?/i, (msg) ->
+  robot.respond /quote(\s.*)?$/i, (msg) ->
     return unless isLoaded(msg)
 
     potential = quotesMatching queryFrom msg
