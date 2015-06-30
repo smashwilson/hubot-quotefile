@@ -61,8 +61,9 @@ module.exports = (robot) ->
 
   quotesMatching = (query) ->
     if query.length > 0
+      rxs = (new RegExp(q, 'i') for q in query)
       _.filter quotes, (quote) ->
-        _.every query, (q) -> quote.indexOf(q) isnt -1
+        _.every rxs, (rx) -> rx.test(quote)
     else
       quotes
 
