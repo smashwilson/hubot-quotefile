@@ -120,11 +120,14 @@ module.exports = (robot) ->
     try
       quote = parse msg.match[2]
     catch e
-      msg.reply "http://www.sadtrombone.com/"
-      msg.reply e.message
-      msg.reply "```\n#{e.stack}\n```"
+      msg.reply [
+        "http://www.sadtrombone.com/"
+        e.message
+        "```\n#{e.stack}\n```"
+      ].join("\n")
+      return
 
-    fs.appendFile quotefilePath, processed, ->
+    fs.appendFile quotefilePath, quote, ->
       msg.reply "Quote added."
       reloadThen (err) ->
         if err?
