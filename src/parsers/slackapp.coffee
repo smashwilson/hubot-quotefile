@@ -22,14 +22,19 @@ module.exports = (lines) ->
 
   result = []
   for line in lines
-    switch
-      when rxWs.test(line)
-        # Entirely whitespace. Skip.
-      when (m = rxNickLine.exec(line))
-        nick = m[1]
-        ts = parseTs(m[2])
-      when (m = rxTsLine.exec(line))
-        ts = parseTs(m[1])
-      else
-        result.push "#{nick} [#{ts}] #{line}"
+    if rxWs.test line
+      continue
+
+    m = rxNickLine.exec line
+    if m?
+      nick = m[1]
+      ts = parseTs m[2]
+      continue
+
+    m = rxTsLine.exec line
+    if m?
+      ts = parseTs m[1]
+      continue
+
+    result.push "#{nick} [#{ts}] #{line}"
   result
