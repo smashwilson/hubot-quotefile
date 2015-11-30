@@ -20,6 +20,7 @@
 fs = require 'fs'
 _ = require 'underscore'
 moment = require 'moment'
+parsers = require './parser'
 
 CREATOR_ROLE = 'quote pontiff'
 
@@ -97,7 +98,7 @@ module.exports = (robot) ->
       else
         msg.send "#{quotes.length} quotes loaded successfully."
 
-  robot.respond /create quote: ([\s\S]*)/i, (msg) ->
+  robot.respond /(create|verbatim|slackapp|slackweb) quote:\s*([^]+)/i, (msg) ->
     unless robot.auth.hasRole(msg.message.user, CREATOR_ROLE)
       msg.reply [
         "You can't do that! You're not a *#{CREATOR_ROLE}*."
@@ -105,27 +106,25 @@ module.exports = (robot) ->
       ].join("\n")
       return
 
-    q = msg.match[1]
+    pname = msg.match[1]
+    pname = 'identity' if pname is 'create' or pname is 'verbatim'
 
-    # Post-processing specific to Slack.
-    processed = ['']
-    [speaker, ts] = []
-    for line in q.split(/\n/)
-      m = line.match /(\S+) \[(\d?\d):(\d\d) ([AP]M)\]/
-      if m?
-        [x, speaker, hours, minutes, ampm] = m
-        [hours, minutes] = [parseInt(hours), parseInt(minutes)]
-        hours += 12 if ampm is 'PM'
-        timestamp = moment({hours: hours, minutes: minutes})
-        ts = timestamp.format('h:mm A D MMM YYYY')
-      else if speaker? and line.length > 0
-        processed.push "[#{ts}] #{speaker}: #{line}"
-      else if line.length > 0
-        processed.push line
-    processed.push ''
+    parse = parsers[pname]
+    unless parse?
+      msg.reply [
+        "I don't recognize the `#{pname}` parser."
+        "Please file an issue at: https://github.com/smashwilson/hubot-quotefile/issues/new"
+      ].join("\n")
+      return
 
-    nquote = processed.join("\n")
-    fs.appendFile quotefilePath, nquote, ->
+    try
+      quote = parse msg.match[2]
+    catch e
+      msg.reply "http://www.sadtrombone.com/"
+      msg.reply e.message
+      msg.reply "```\n#{e.stack}\n```"
+
+    fs.appendFile quotefilePath, processed, ->
       msg.reply "Quote added."
       reloadThen (err) ->
         if err?
