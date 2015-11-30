@@ -5,4 +5,4 @@ asDriver = (parser) ->
     parser(raw.split(/\n/)).join("\n")
 
 exports.identity = asDriver require './identity'
-exports.slackClient = asDriver require './slackapp'
+exports.slackapp = asDriver require './slackapp'
