@@ -20,7 +20,7 @@
 fs = require 'fs'
 _ = require 'underscore'
 moment = require 'moment'
-parsers = require './parser'
+parsers = require './parsers'
 
 CREATOR_ROLE = 'quote pontiff'
 
