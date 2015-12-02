@@ -39,5 +39,7 @@ module.exports = (lines) ->
     unless nick? and ts?
       throw new Error("Expected nick and timestamp line first.")
 
+    line = line.replace(/\s*\(edited\)$/, '')
+
     result.push "#{nick} [#{ts}] #{line}"
   result
