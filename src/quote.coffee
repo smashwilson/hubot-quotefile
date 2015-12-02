@@ -13,6 +13,8 @@
 #   hubot howmany <query> - Return the number of quotes that contain each word of <query>.
 #   hubot reload quotes - Reload the quote file.
 #   hubot quotestats - Show who's been quoted the most!
+#   hubot verbatim quote: [...] - Enter a quote into the quote file exactly as given.
+#   hubot slackapp quote: [...] - Parse a quote from the Slack app's paste format.
 #
 # Author:
 #   smashwilson
