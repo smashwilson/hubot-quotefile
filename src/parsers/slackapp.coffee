@@ -4,7 +4,7 @@ moment = require 'moment'
 _ = require 'underscore'
 
 # RegExp snippets for reuse
-TS = '\\[(\d{1,2}:\d{2}(?: [aApP][mM])?)\\]' # [11:22 AM] *or* [16:00]
+TS = '\\[(\d{1,2}:\d{2}( [aApP][mM])?)\\]' # [11:22 AM] *or* [16:00]
 
 # RegExps
 rxWs = /^\s*$/
@@ -19,7 +19,7 @@ parseTs = (ts) ->
   parsed
 
 module.exports = (lines) ->
-  [nick, ts] = []
+  [nick, ts. ampm] = []
 
   result = []
   for line in lines
@@ -33,11 +33,14 @@ module.exports = (lines) ->
     if m?
       nick = m[1]
       ts = parseTs m[2]
+      ampm = m[3]
       continue
 
     m = rxTsLine.exec line
     if m?
-      ts = parseTs m[1]
+      rawTs = m[1]
+      rawTs += ampm if ampm? and not m[2]?
+      ts = parseTs rawTs
       continue
 
     unless nick? and ts?
