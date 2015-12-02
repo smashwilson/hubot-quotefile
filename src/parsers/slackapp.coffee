@@ -19,7 +19,7 @@ parseTs = (ts) ->
   parsed
 
 module.exports = (lines) ->
-  [nick, ts. ampm] = []
+  [nick, ts, ampm] = []
 
   result = []
   for line in lines
