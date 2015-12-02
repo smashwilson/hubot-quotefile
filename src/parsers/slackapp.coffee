@@ -36,5 +36,8 @@ module.exports = (lines) ->
       ts = parseTs m[1]
       continue
 
+    unless nick? and ts?
+      throw new Error("Expected nick and timestamp line first.")
+
     result.push "#{nick} [#{ts}] #{line}"
   result
