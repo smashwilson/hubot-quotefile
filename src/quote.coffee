@@ -98,7 +98,7 @@ module.exports = (robot) ->
       else
         msg.send "#{quotes.length} quotes loaded successfully."
 
-  robot.respond /(create|verbatim|slackapp|slackweb) quote:\s*([^]+)/i, (msg) ->
+  robot.respond /(verbatim|slackapp) quote:\s*([^]+)/i, (msg) ->
     unless robot.auth.hasRole(msg.message.user, CREATOR_ROLE)
       msg.reply [
         "You can't do that! You're not a *#{CREATOR_ROLE}*."
@@ -107,7 +107,7 @@ module.exports = (robot) ->
       return
 
     pname = msg.match[1]
-    pname = 'identity' if pname is 'create' or pname is 'verbatim'
+    pname = 'identity' if pname is 'verbatim'
 
     parse = parsers[pname]
     unless parse?
