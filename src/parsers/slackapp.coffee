@@ -9,7 +9,7 @@ TS = '\\[(\\d{1,2}:\\d{2}( [aApP][mM])?)\\]' # [11:22 AM] *or* [16:00]
 # RegExps
 rxWs = /^\s*$/
 rxNickLine = new RegExp("^\\s*(\\S+)\\s+#{TS}\\s*$")
-rxTsLine = new RegExp("^\\s*#{TS}\\s*")
+rxTsLine = new RegExp("^\\s*#{TS}\\s*$")
 rxNewMessagesLine = new RegExp("^\\snew messages*\\s*$")
 
 parseTs = (ts) ->
