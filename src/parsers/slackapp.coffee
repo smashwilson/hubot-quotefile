@@ -48,5 +48,5 @@ module.exports = (lines) ->
 
     line = line.replace(/\s*\(edited\)$/, '')
 
-    result.push "#{nick} [#{ts}] #{line}"
+    result.push "[#{ts.format('h:mm A D MMM YYYY')}] #{nick}: #{line}"
   result
