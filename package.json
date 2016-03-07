@@ -1,7 +1,7 @@
 {
   "name": "hubot-quotefile",
   "description": "Report random quotes from a data file.",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "author": "Ash Wilson <smashwilson@gmail.com>",
   "license": "MIT",
   "keywords": [
