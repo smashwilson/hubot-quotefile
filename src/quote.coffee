@@ -140,6 +140,13 @@ module.exports = (robot) ->
           msg.send "#{quotes.length} quotes reloaded successfully."
 
   robot.respond /buffer quote/i, (msg) ->
+    unless robot.auth.hasRole(msg.message.user, CREATOR_ROLE)
+      msg.reply [
+        "You can't do that! You're not a *#{CREATOR_ROLE}*."
+        "Ask an admin to run `#{robot.name} #{msg.message.user.name} has #{CREATOR_ROLE} role`."
+      ].join("\n")
+      return
+
     unless robot.bufferForUserName?
       msg.reply "Buffer package not available."
       return
