@@ -138,6 +138,35 @@ module.exports = (robot) ->
         else
           msg.send "#{quotes.length} quotes reloaded successfully."
 
+  robot.respond /buffer quote/i, (msg) ->
+    unless robot.bufferForUserName?
+      msg.reply "Buffer package not available."
+      return
+
+    buffer = robot.bufferForUserName msg.message.user.name
+    lines = buffer.commit()
+
+    unless lines.length > 0
+      msg.reply "Your buffer is empty."
+      return
+
+    processed = for line in lines
+      if line.isRaw()
+        line.text
+      else
+        ts = moment(line.timestamp).format('h:mm A D MMM YYYY')
+        "[#{ts}] #{line.speaker}: #{line.text}"
+    quote = "\n" + processed.join("\n") + "\n"
+
+    fs.appendFile quotefilePath, quote, ->
+      msg.reply "Quote added."
+      reloadThen (err) ->
+        if err?
+          msg.reply "AAAAAAAH"
+          msg.send err.stack
+        else
+          msg.send "#{quotes.length} quotes reloaded successfully."
+
   robot.respond /quotestats$/i, (msg) ->
     return unless isLoaded(msg)
 
