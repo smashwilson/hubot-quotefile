@@ -15,6 +15,7 @@
 #   hubot quotestats - Show who's been quoted the most!
 #   hubot verbatim quote: [...] - Enter a quote into the quote file exactly as given.
 #   hubot slackapp quote: [...] - Parse a quote from the Slack app's paste format.
+#   hubot buffer quote - Enter a quote from the buffer.
 #
 # Author:
 #   smashwilson
