@@ -164,7 +164,11 @@ module.exports = (robot) ->
       else
         ts = moment(line.timestamp).format('h:mm A D MMM YYYY')
         "[#{ts}] #{line.speaker}: #{line.text}"
-    quote = "\n" + processed.join("\n") + "\n"
+    quote = processed.join("\n")
+
+    msg.send quote
+
+    quote = "\n" + quote + "\n"
 
     fs.appendFile quotefilePath, quote, ->
       msg.reply "Quote added."
