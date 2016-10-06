@@ -10,6 +10,8 @@
 # Commands:
 #   hubot quote - Retrieve a random quote.
 #   hubot quote <query> - Retrieve a random quote that contains each word of <query>.
+#   hubot quoteby <username> [<query>] - Retrieve a random quote including a line spoken by <username>.
+#   hubot quoteabout <username> [<query>] - Retrieve a random quote including a line addressing <username>.
 #   hubot howmany <query> - Return the number of quotes that contain each word of <query>.
 #   hubot reload quotes - Reload the quote file.
 #   hubot quotestats - Show who's been quoted the most!
@@ -56,20 +58,39 @@ module.exports = (robot) ->
       msg.reply "Just a moment, the quotes aren't loaded yet."
       false
 
-  queryFrom = (msg) ->
-    if msg.match[1]?
-      words = msg.match[1].trim().split /\s+/
+  queryFrom = (msg, matchNumber = 1) ->
+    if msg.match[matchNumber]?
+      words = msg.match[matchNumber].trim().split /\s+/
     else
       words = ['']
     _.filter words, (part) -> part.length > 0
 
-  quotesMatching = (query) ->
+  quotesMatching = (query = [], speakers = [], mentions = []) ->
+    results = quotes
+
+    if speakers.length > 0 or mentions.length > 0
+      results = _.filter results, (quote) ->
+        speakersNotSeen = new Set(speakers)
+        mentionsNotSeen = new Set(mentions)
+
+        for line in quote.split /\n/
+          m = line.match /^\[[^\]]+\] @?([^:]+): (.*)$/
+          if m?
+            [x, speaker, rest] = m
+            speakersNotSeen.delete(speaker)
+            for mention in mentions
+              mentionsNotSeen.delete(mention) if rest.includes mention
+
+        speakersNotSeen.size is 0 and mentionsNotSeen.size is 0
+
     if query.length > 0
       rxs = (new RegExp(q, 'i') for q in query)
-      _.filter quotes, (quote) ->
+      results = _.filter results, (quote) ->
         _.every rxs, (rx) -> rx.test(quote)
-    else
-      quotes
+
+      results
+
+    results
 
   # Perform the initial load.
   reloadThen ->
@@ -84,6 +105,58 @@ module.exports = (robot) ->
       msg.send potential[chosen]
     else
       msg.send "That wasn't notable enough to quote. Try harder."
+
+  robot.respond /quoteby\s+@?(\S+)(\s+.*)?$/i, (msg) ->
+    return unless isLoaded(msg)
+
+    speakers = msg.match[1].split('+')
+    query = queryFrom msg, 2
+
+    potential = quotesMatching query, speakers, null
+
+    if potential.length > 0
+      chosen = _.random potential.length - 1
+      msg.send potential[chosen]
+    else
+      m = "No quotes with lines spoken by "
+
+      if speakers.length is 1
+        m += speakers[0]
+      else if speakers.length is 2
+        m += "both #{speakers[0]} and #{speakers[1]}"
+      else
+        m += "all of #{speakers.join ', '}"
+
+      if query.length > 0
+        m += " about that"
+
+      msg.send m + '.'
+
+  robot.respond /quoteabout\s+@?(\S+)(\s+.*)?$/i, (msg) ->
+    return unless isLoaded(msg)
+
+    mentions = msg.match[1].split('+')
+    query = queryFrom msg, 2
+
+    potential = quotesMatching query, null, mentions
+
+    if potential.length > 0
+      chosen = _.random potential.length - 1
+      msg.send potential[chosen]
+    else
+      m = "No quotes about "
+
+      if mentions.length is 1
+        m += mentions[0]
+      else if mentions.length is 2
+        m += "both #{mentions[0]} and #{mentions[1]}"
+      else
+        m += "all of #{mentions.join ', '}"
+
+      if query.length > 0
+        m += " about that"
+
+      msg.send m + '.'
 
   robot.respond /howmany(\s.*)/i, (msg) ->
     return unless isLoaded(msg)
