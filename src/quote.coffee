@@ -10,6 +10,8 @@
 # Commands:
 #   hubot quote - Retrieve a random quote.
 #   hubot quote <query> - Retrieve a random quote that contains each word of <query>.
+#   hubot quoteby <username> [<query>] - Retrieve a random quote including a line spoken by <username>.
+#   hubot quoteabout <username> [<query>] - Retrieve a random quote including a line addressing <username>.
 #   hubot howmany <query> - Return the number of quotes that contain each word of <query>.
 #   hubot reload quotes - Reload the quote file.
 #   hubot quotestats - Show who's been quoted the most!
@@ -56,20 +58,35 @@ module.exports = (robot) ->
       msg.reply "Just a moment, the quotes aren't loaded yet."
       false
 
-  queryFrom = (msg) ->
-    if msg.match[1]?
-      words = msg.match[1].trim().split /\s+/
+  queryFrom = (msg, matchNumber = 1) ->
+    if msg.match[matchNumber]?
+      words = msg.match[matchNumber].trim().split /\s+/
     else
       words = ['']
     _.filter words, (part) -> part.length > 0
 
-  quotesMatching = (query) ->
+  quotesMatching = (query = [], speaker = null, mention = null) ->
+    results = quotes
+
+    if speaker? or mention?
+      results = _.filter results, (quote) ->
+        match = false
+        for line in quote.split /\n/
+          m = line.match /^\[[^\]]+\] @?([^:]+): (.*)$/
+          if m?
+            [x, sp, rest] = m
+            match = true if speaker? and sp is speaker
+            match = true if mention? and rest.includes mention
+        match
+
     if query.length > 0
       rxs = (new RegExp(q, 'i') for q in query)
-      _.filter quotes, (quote) ->
+      results = _.filter results, (quote) ->
         _.every rxs, (rx) -> rx.test(quote)
-    else
-      quotes
+
+      results
+
+    results
 
   # Perform the initial load.
   reloadThen ->
@@ -84,6 +101,40 @@ module.exports = (robot) ->
       msg.send potential[chosen]
     else
       msg.send "That wasn't notable enough to quote. Try harder."
+
+  robot.respond /quoteby\s+@?(\S+)(\s+.*)?$/i, (msg) ->
+    return unless isLoaded(msg)
+
+    speaker = msg.match[1].trim()
+    query = queryFrom msg, 2
+
+    potential = quotesMatching query, speaker, null
+
+    if potential.length > 0
+      chosen = _.random potential.length - 1
+      msg.send potential[chosen]
+    else
+      m = "No quotes spoken by #{speaker}"
+      if query.length > 0
+        m += " about that"
+      msg.send m + '.'
+
+  robot.respond /quoteabout\s+@?(\S+)(\s+.*)?$/i, (msg) ->
+    return unless isLoaded(msg)
+
+    mention = msg.match[1].trim()
+    query = queryFrom msg, 2
+
+    potential = quotesMatching query, null, mention
+
+    if potential.length > 0
+      chosen = _.random potential.length - 1
+      msg.send potential[chosen]
+    else
+      m = "No quotes about #{mention}"
+      if query.length > 0
+        m += " about that"
+      msg.send m + '.'
 
   robot.respond /howmany(\s.*)/i, (msg) ->
     return unless isLoaded(msg)
