@@ -65,19 +65,23 @@ module.exports = (robot) ->
       words = ['']
     _.filter words, (part) -> part.length > 0
 
-  quotesMatching = (query = [], speaker = null, mention = null) ->
+  quotesMatching = (query = [], speakers = [], mentions = []) ->
     results = quotes
 
-    if speaker? or mention?
+    if speakers.length > 0 or mentions.length > 0
       results = _.filter results, (quote) ->
-        match = false
+        speakersNotSeen = new Set(speakers)
+        mentionsNotSeen = new Set(mentions)
+
         for line in quote.split /\n/
           m = line.match /^\[[^\]]+\] @?([^:]+): (.*)$/
           if m?
-            [x, sp, rest] = m
-            match = true if speaker? and sp is speaker
-            match = true if mention? and rest.includes mention
-        match
+            [x, speaker, rest] = m
+            speakersNotSeen.delete(speaker)
+            for mention in mentions
+              mentionsNotSeen.delete(mention) if rest.includes mention
+
+        speakersNotSeen.size is 0 and mentionsNotSeen.size is 0
 
     if query.length > 0
       rxs = (new RegExp(q, 'i') for q in query)
@@ -105,35 +109,53 @@ module.exports = (robot) ->
   robot.respond /quoteby\s+@?(\S+)(\s+.*)?$/i, (msg) ->
     return unless isLoaded(msg)
 
-    speaker = msg.match[1].trim()
+    speakers = msg.match[1].split('+')
     query = queryFrom msg, 2
 
-    potential = quotesMatching query, speaker, null
+    potential = quotesMatching query, speakers, null
 
     if potential.length > 0
       chosen = _.random potential.length - 1
       msg.send potential[chosen]
     else
-      m = "No quotes spoken by #{speaker}"
+      m = "No quotes with lines spoken by "
+
+      if speakers.length is 1
+        m += speakers[0]
+      else if speakers.length is 2
+        m += "both #{speakers[0]} and #{speakers[1]}"
+      else
+        m += "all of #{speakers.join ', '}"
+
       if query.length > 0
         m += " about that"
+
       msg.send m + '.'
 
   robot.respond /quoteabout\s+@?(\S+)(\s+.*)?$/i, (msg) ->
     return unless isLoaded(msg)
 
-    mention = msg.match[1].trim()
+    mentions = msg.match[1].split('+')
     query = queryFrom msg, 2
 
-    potential = quotesMatching query, null, mention
+    potential = quotesMatching query, null, mentions
 
     if potential.length > 0
       chosen = _.random potential.length - 1
       msg.send potential[chosen]
     else
-      m = "No quotes about #{mention}"
+      m = "No quotes about "
+
+      if mentions.length is 1
+        m += mentions[0]
+      else if mentions.length is 2
+        m += "both #{mentions[0]} and #{mentions[1]}"
+      else
+        m += "all of #{mentions.join ', '}"
+
       if query.length > 0
         m += " about that"
+
       msg.send m + '.'
 
   robot.respond /howmany(\s.*)/i, (msg) ->
